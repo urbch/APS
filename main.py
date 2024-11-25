@@ -573,9 +573,33 @@ class StartupDialog(QDialog):
         self.ui_.setupUi(self)
 
     def devicesCount(self):
+        """Возвращает количество устройств."""
         return self.ui_.devicesSpin.value()
 
-    # ... (Other getters remain largely unchanged)
+    def clientsCount(self):
+        """Возвращает количество клиентов."""
+        return self.ui_.clientsSpin.value()
+
+    def time(self):
+        """Возвращает общее время симуляции."""
+        return self.ui_.timeSpin.value()
+
+    def bufferSize(self):
+        """Возвращает размер буфера."""
+        return self.ui_.bufferSpin.value()
+
+    def minDeviceTime(self):
+        """Возвращает минимальное время обработки устройства."""
+        return self.ui_.minDeviceTimeSpin.value()
+
+    def maxDeviceTime(self):
+        """Возвращает максимальное время обработки устройства."""
+        return self.ui_.maxDeviceTimeSpin.value()
+
+    def lambda_(self):
+        """Возвращает значение параметра lambda."""
+        return self.ui_.lambdaSpin.value()
+
 
 
 class MainWindow(QMainWindow):
@@ -592,10 +616,10 @@ class MainWindow(QMainWindow):
                                        bufferSize=5, minDeviceTime=1,
                                        maxDeviceTime=2, lambda_=3)
 
-        if '--no-debug' not in sys.argv:
-            self.initParams(debug_params)
-        else:
-            QTimer.singleShot(0, self.execStartupWindow)
+        # if '--no-debug' not in sys.argv:
+        #     self.initParams(debug_params)
+        # else:
+        #QTimer.singleShot(0, self.execStartupWindow)
 
     def step(self):
         if self.eventHolder_.isFinished():
@@ -652,8 +676,35 @@ class MainWindow(QMainWindow):
         self.ui_.autoBtn.clicked.connect(self.finish)
 
 
+# if __name__ == "__main__":
+#     app = QApplication(sys.argv)
+#     window = MainWindow()
+#     window.show()
+#     sys.exit(app.exec_())
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec_())
+
+    # Инициализация диалога старта
+    startup_dialog = StartupDialog()
+    if startup_dialog.exec_() == QDialog.Accepted:
+        # Извлечение параметров из диалога
+        params = InputParameters(
+            nDevices=startup_dialog.devicesCount(),
+            nClients=startup_dialog.clientsCount(),
+            time=startup_dialog.time(),
+            bufferSize=startup_dialog.bufferSize(),
+            minDeviceTime=startup_dialog.minDeviceTime(),
+            maxDeviceTime=startup_dialog.maxDeviceTime(),
+            lambda_=startup_dialog.lambda_()
+        )
+
+        # Создание основного окна с параметрами
+        main_window = MainWindow()
+        main_window.initParams(params)
+        main_window.show()
+
+        sys.exit(app.exec_())
+    else:
+        # Закрытие приложения, если пользователь отменил диалог
+        sys.exit()
